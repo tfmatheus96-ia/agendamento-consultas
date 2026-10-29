@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MediCare Faúla - Gestão & Agendamento Médico</title>
+    <title>MediCare Pro - Gestão & Agendamento Médico</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -259,7 +259,8 @@
                             </div>
                             <div>
                                 <label for="patient-phone" class="block text-xs font-medium text-slate-500 mb-1">Telefone / WhatsApp *</label>
-                                <input type="tel" id="patient-phone" required placeholder="(61) 99999-9999" class="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
+                                <!-- Campo de texto flexível (Aceita qualquer formato digitado) -->
+                                <input type="text" id="patient-phone" required placeholder="61981221820 ou (61) 98122-1820" class="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white focus:ring-2 focus:ring-brand-500 outline-none">
                             </div>
                             <div class="md:col-span-2">
                                 <label for="patient-notes" class="block text-xs font-medium text-slate-500 mb-1">Observações ou Motivo da Consulta (Opcional)</label>
@@ -576,7 +577,6 @@
                 btnSubmit.disabled = true;
                 btnSubmit.innerText = "Agendando...";
 
-                // Validação anti-duplicidade em tempo real
                 const q = query(
                     collection(db, "appointments"),
                     where("doctorId", "==", selectedDoctorId),
@@ -596,6 +596,8 @@
                 }
 
                 const doctor = doctors.find(d => d.id === selectedDoctorId);
+                const rawPhone = document.getElementById('patient-phone').value.trim();
+
                 const newAppointment = {
                     doctorId: selectedDoctorId,
                     doctorName: doctor ? doctor.name : 'Médico',
@@ -604,7 +606,7 @@
                     date: dateVal,
                     time: selectedTimeSlot,
                     patientName: document.getElementById('patient-name').value,
-                    patientPhone: document.getElementById('patient-phone').value,
+                    patientPhone: rawPhone,
                     notes: document.getElementById('patient-notes').value,
                     status: "Agendada",
                     createdAt: new Date().toISOString()
@@ -614,17 +616,15 @@
 
                 alert("Consulta agendada com sucesso!");
 
-                // Reset do Formulário e Seleções
                 document.getElementById('booking-form').reset();
                 selectedTimeSlot = null;
                 document.getElementById('time-slots-grid').innerHTML = `<p class="text-xs text-slate-400 col-span-3">Selecione uma data para visualizar os horários.</p>`;
 
-                // Redireciona para a tela de consultas
                 switchTab('appointments');
 
             } catch (err) {
                 alert("Erro ao agendar consulta: " + err.message);
-            } finally {
+            } flexy {
                 btnSubmit.disabled = false;
                 btnSubmit.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Confirmar Agendamento`;
                 lucide.createIcons();
