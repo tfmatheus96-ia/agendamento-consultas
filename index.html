@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MediCare Pro - Gestão & Agendamento Médico</title>
+    <title>MediCare Faúla - Gestão & Agendamento Médico</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -268,7 +268,7 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-3.5 px-4 rounded-xl shadow-lg shadow-brand-500/20 active:scale-[0.99] transition-all text-base flex items-center justify-center gap-2">
+                    <button type="submit" id="btn-submit-booking" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-3.5 px-4 rounded-xl shadow-lg shadow-brand-500/20 active:scale-[0.99] transition-all text-base flex items-center justify-center gap-2">
                         <i data-lucide="check-circle" class="w-5 h-5"></i>
                         Confirmar Agendamento
                     </button>
@@ -434,7 +434,6 @@
             }
         });
 
-        // Login com verificação detalhada do tipo de erro
         window.handleLogin = async function(e) {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -491,6 +490,10 @@
                         </div>
                     </div>
                 `).join('');
+
+                if (doctors.length > 0 && !selectedDoctorId) {
+                    selectDoctor(doctors[0].id);
+                }
             }
 
             if (gridManage) {
@@ -522,6 +525,11 @@
             const dateVal = document.getElementById('booking-date').value;
             const grid = document.getElementById('time-slots-grid');
 
+            if (!selectedDoctorId && doctors.length > 0) {
+                selectDoctor(doctors[0].id);
+                return;
+            }
+
             if (!dateVal || !selectedDoctorId) {
                 grid.innerHTML = `<p class="text-xs text-slate-400 col-span-3">Selecione médico e data.</p>`;
                 return;
@@ -550,49 +558,77 @@
 
         window.handleBookingSubmit = async function(e) {
             e.preventDefault();
-            if (!selectedDoctorId || !selectedTimeSlot) {
-                alert("Por favor, selecione um médico e um horário disponível.");
+            
+            if (!selectedDoctorId) {
+                alert("Por favor, selecione um médico.");
+                return;
+            }
+
+            if (!selectedTimeSlot) {
+                alert("Por favor, escolha um horário disponível.");
                 return;
             }
 
             const dateVal = document.getElementById('booking-date').value;
+            const btnSubmit = document.getElementById('btn-submit-booking');
 
-            const q = query(
-                collection(db, "appointments"),
-                where("doctorId", "==", selectedDoctorId),
-                where("date", "==", dateVal),
-                where("time", "==", selectedTimeSlot),
-                where("status", "!=", "Cancelada")
-            );
+            try {
+                btnSubmit.disabled = true;
+                btnSubmit.innerText = "Agendando...";
 
-            const existingDocs = await getDocs(q);
-            if (!existingDocs.empty) {
-                alert("Atenção: Este horário acabou de ser agendado por outro usuário. Por favor, escolha outro horário.");
-                window.onDateSelected();
-                return;
+                // Validação anti-duplicidade em tempo real
+                const q = query(
+                    collection(db, "appointments"),
+                    where("doctorId", "==", selectedDoctorId),
+                    where("date", "==", dateVal),
+                    where("time", "==", selectedTimeSlot),
+                    where("status", "!=", "Cancelada")
+                );
+
+                const existingDocs = await getDocs(q);
+                if (!existingDocs.empty) {
+                    alert("Atenção: Este horário acabou de ser agendado por outro usuário. Por favor, escolha outro horário.");
+                    window.onDateSelected();
+                    btnSubmit.disabled = false;
+                    btnSubmit.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Confirmar Agendamento`;
+                    lucide.createIcons();
+                    return;
+                }
+
+                const doctor = doctors.find(d => d.id === selectedDoctorId);
+                const newAppointment = {
+                    doctorId: selectedDoctorId,
+                    doctorName: doctor ? doctor.name : 'Médico',
+                    doctorSpecialty: doctor ? doctor.specialty : '',
+                    price: doctor ? doctor.price : 0,
+                    date: dateVal,
+                    time: selectedTimeSlot,
+                    patientName: document.getElementById('patient-name').value,
+                    patientPhone: document.getElementById('patient-phone').value,
+                    notes: document.getElementById('patient-notes').value,
+                    status: "Agendada",
+                    createdAt: new Date().toISOString()
+                };
+
+                await addDoc(collection(db, "appointments"), newAppointment);
+
+                alert("Consulta agendada com sucesso!");
+
+                // Reset do Formulário e Seleções
+                document.getElementById('booking-form').reset();
+                selectedTimeSlot = null;
+                document.getElementById('time-slots-grid').innerHTML = `<p class="text-xs text-slate-400 col-span-3">Selecione uma data para visualizar os horários.</p>`;
+
+                // Redireciona para a tela de consultas
+                switchTab('appointments');
+
+            } catch (err) {
+                alert("Erro ao agendar consulta: " + err.message);
+            } finally {
+                btnSubmit.disabled = false;
+                btnSubmit.innerHTML = `<i data-lucide="check-circle" class="w-5 h-5"></i> Confirmar Agendamento`;
+                lucide.createIcons();
             }
-
-            const doctor = doctors.find(d => d.id === selectedDoctorId);
-            const newAppointment = {
-                doctorId: selectedDoctorId,
-                doctorName: doctor.name,
-                doctorSpecialty: doctor.specialty,
-                price: doctor.price,
-                date: dateVal,
-                time: selectedTimeSlot,
-                patientName: document.getElementById('patient-name').value,
-                patientPhone: document.getElementById('patient-phone').value,
-                notes: document.getElementById('patient-notes').value,
-                status: "Agendada",
-                createdAt: new Date().toISOString()
-            };
-
-            await addDoc(collection(db, "appointments"), newAppointment);
-
-            document.getElementById('booking-form').reset();
-            selectedDoctorId = null;
-            selectedTimeSlot = null;
-            switchTab('appointments');
         };
 
         function renderAppointments() {
