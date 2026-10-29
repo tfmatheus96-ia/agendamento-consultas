@@ -32,10 +32,48 @@
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
-<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full font-sans antialiased pb-20 md:pb-0 transition-colors duration-200">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full font-sans antialiased transition-colors duration-200">
 
-    <!-- App Container -->
-    <div class="min-h-screen flex flex-col md:flex-row">
+    <!-- SCREEN 1: LOGIN TELA -->
+    <div id="screen-login" class="min-h-screen flex items-center justify-center p-4 bg-slate-100 dark:bg-slate-900">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-8 space-y-6">
+            <div class="text-center space-y-2">
+                <div class="inline-flex bg-brand-600 text-white p-3 rounded-2xl shadow-lg shadow-brand-500/30 mb-2">
+                    <i data-lucide="stethoscope" class="w-8 h-8"></i>
+                </div>
+                <h1 class="text-2xl font-bold text-slate-900 dark:text-white">MediCare Pro</h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Entre com as suas credenciais de colaborador</p>
+            </div>
+
+            <form onsubmit="handleLogin(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">E-mail do Colaborador</label>
+                    <div class="relative">
+                        <i data-lucide="mail" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
+                        <input type="email" id="login-email" required placeholder="colaborador@medicare.com" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">Senha</label>
+                    <div class="relative">
+                        <i data-lucide="lock" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
+                        <input type="password" id="login-password" required placeholder="••••••••" class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 outline-none">
+                    </div>
+                </div>
+
+                <div id="login-error" class="hidden p-3 rounded-xl bg-rose-50 text-rose-600 text-xs font-medium text-center"></div>
+
+                <button type="submit" id="btn-login-submit" class="w-full bg-brand-600 hover:bg-brand-700 text-white font-medium py-3 rounded-xl shadow-lg shadow-brand-500/20 active:scale-[0.99] transition-all text-sm flex items-center justify-center gap-2">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    Entrar no Sistema
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- SCREEN 2: MAIN DASHBOARD APP (HIDDEN UNTIL LOGIN) -->
+    <div id="screen-app" class="hidden min-h-screen flex flex-col md:flex-row pb-20 md:pb-0">
 
         <!-- Desktop Sidebar -->
         <aside class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 p-4 sticky top-0 h-screen z-20">
@@ -68,13 +106,17 @@
                 </button>
             </nav>
 
-            <div class="pt-4 border-t border-slate-200 dark:border-slate-700">
+            <div class="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
                 <button onclick="toggleTheme()" class="w-full flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-700/50">
                     <span class="flex items-center gap-2">
                         <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
                         <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
                         Tema Claro/Escuro
                     </span>
+                </button>
+                <button onclick="handleLogout()" class="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20">
+                    <i data-lucide="log-out" class="w-4 h-4"></i>
+                    Sair da Conta
                 </button>
             </div>
         </aside>
@@ -90,10 +132,15 @@
                     </div>
                     <span class="font-bold text-slate-900 dark:text-white">MediCare</span>
                 </div>
-                <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
-                    <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
-                    <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
-                </button>
+                <div class="flex items-center gap-2">
+                    <button onclick="toggleTheme()" class="p-2 rounded-lg bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-200">
+                        <i data-lucide="moon" class="w-4 h-4 dark:hidden"></i>
+                        <i data-lucide="sun" class="w-4 h-4 hidden dark:block"></i>
+                    </button>
+                    <button onclick="handleLogout()" class="p-2 rounded-lg bg-rose-100 text-rose-600">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </header>
 
             <!-- TAB 1: DASHBOARD -->
@@ -237,22 +284,6 @@
                     </div>
                 </div>
 
-                <!-- Filters -->
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row gap-3">
-                    <div class="flex-1 relative">
-                        <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-3.5 text-slate-400"></i>
-                        <input type="text" id="search-input" onkeyup="filterAppointments()" placeholder="Buscar por paciente ou médico..." class="w-full pl-10 pr-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-brand-500 outline-none">
-                    </div>
-                    <div class="flex gap-2">
-                        <select id="filter-status" onchange="filterAppointments()" class="p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm outline-none">
-                            <option value="all">Todos os Status</option>
-                            <option value="Agendada">Agendada</option>
-                            <option value="Concluída">Concluída</option>
-                            <option value="Cancelada">Cancelada</option>
-                        </select>
-                    </div>
-                </div>
-
                 <!-- Appointments List -->
                 <div id="appointments-full-list" class="space-y-3">
                     <!-- Populated dynamically -->
@@ -260,20 +291,43 @@
             </section>
 
             <!-- TAB 4: MÉDICOS E EQUIPE -->
-            <section id="tab-doctors" class="tab-content hidden space-y-6">
-                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Corpo Médico</h2>
-                        <p class="text-sm text-slate-500 dark:text-slate-400">Cadastre novos profissionais e defina valores e CRM.</p>
+            <section id="tab-doctors" class="tab-content hidden space-y-8">
+                <!-- Seção Corpo Médico -->
+                <div class="space-y-4">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-900 dark:text-white">Corpo Médico</h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Cadastre novos profissionais e defina valores e CRM.</p>
+                        </div>
+                        <button onclick="toggleDoctorModal(true)" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 active:scale-95 transition-all">
+                            <i data-lucide="user-plus" class="w-4 h-4"></i>
+                            Adicionar Médico
+                        </button>
                     </div>
-                    <button onclick="toggleDoctorModal(true)" class="bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-lg shadow-brand-500/20 active:scale-95 transition-all">
-                        <i data-lucide="user-plus" class="w-4 h-4"></i>
-                        Adicionar Médico
-                    </button>
+
+                    <div id="doctors-manage-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Populated dynamically -->
+                    </div>
                 </div>
 
-                <div id="doctors-manage-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                    <!-- Populated dynamically -->
+                <hr class="border-slate-200 dark:border-slate-700">
+
+                <!-- Seção Colaboradores e Acessos -->
+                <div class="space-y-4">
+                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Colaboradores & Acessos</h3>
+                            <p class="text-sm text-slate-500 dark:text-slate-400">Cadastre usuários e senhas para que sua equipe possa acessar a plataforma.</p>
+                        </div>
+                        <button onclick="toggleUserModal(true)" class="bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all">
+                            <i data-lucide="shield-plus" class="w-4 h-4"></i>
+                            Criar Novo Colaborador
+                        </button>
+                    </div>
+
+                    <div id="users-manage-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <!-- Populated dynamically -->
+                    </div>
                 </div>
             </section>
 
@@ -335,26 +389,31 @@
         </div>
     </div>
 
-    <!-- Modal: Comprovante / Receipt -->
-    <div id="modal-receipt" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <!-- Modal: Adicionar Colaborador -->
+    <div id="modal-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 space-y-4">
             <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700">
-                <span class="text-xs font-semibold uppercase text-brand-600 tracking-wider">Comprovante de Agendamento</span>
-                <button onclick="toggleReceiptModal(false)" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <h3 class="font-bold text-slate-900 dark:text-white">Criar Login de Colaborador</h3>
+                <button onclick="toggleUserModal(false)" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-            
-            <div id="receipt-content" class="bg-slate-50 dark:bg-slate-900 p-4 rounded-xl space-y-3 text-sm">
-                <!-- Populated via JS -->
-            </div>
-
-            <div class="grid grid-cols-2 gap-2 pt-2">
-                <button onclick="window.print()" class="w-full py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-xs font-medium flex items-center justify-center gap-1.5">
-                    <i data-lucide="printer" class="w-4 h-4"></i> Imprimir / PDF
-                </button>
-                <button onclick="sendWhatsAppReceipt()" class="w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-medium flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20">
-                    <i data-lucide="message-square" class="w-4 h-4"></i> WhatsApp
-                </button>
-            </div>
+            <form onsubmit="handleNewUserSubmit(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">Nome do Colaborador *</label>
+                    <input type="text" id="user-name" required placeholder="Ex: Lucas Gabriel" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">E-mail de Acesso *</label>
+                    <input type="email" id="user-email" required placeholder="lucas@medicare.com" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm outline-none">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-slate-500 mb-1">Senha Inicial * (mínimo 6 caracteres)</label>
+                    <input type="password" id="user-password" required minlength="6" placeholder="••••••••" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm outline-none">
+                </div>
+                <div class="pt-2 flex justify-end gap-2">
+                    <button type="button" onclick="toggleUserModal(false)" class="px-4 py-2 rounded-xl border text-slate-600 dark:text-slate-300 text-sm">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-medium">Cadastrar Acesso</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -362,10 +421,13 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
         import { 
+            getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged 
+        } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-auth.js";
+        import { 
             getFirestore, collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc 
         } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-        // Configuração do Firebase
+        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyATBOwZd9H-Tc7cYG8CQJ0_QKhpCKfMNyw",
             authDomain: "app-agendamento-de-consu-73c7d.firebaseapp.com",
@@ -377,51 +439,71 @@
         };
 
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // Estado Global
         let doctors = [];
         let appointments = [];
+        let teamMembers = [];
         let selectedDoctorId = null;
         let selectedTimeSlot = null;
-        let activeReceiptData = null;
 
         const defaultSlots = ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"];
 
-        // Elementos DOM Globais
-        window.db = db;
-        
-        // Listeners em tempo real do Firestore
+        // Autenticação Listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('screen-login').classList.add('hidden');
+                document.getElementById('screen-app').classList.remove('hidden');
+                initFirestoreListeners();
+            } else {
+                document.getElementById('screen-app').classList.add('hidden');
+                document.getElementById('screen-login').classList.remove('hidden');
+            }
+        });
+
+        // Login Submit
+        window.handleLogin = async function(e) {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value;
+            const pass = document.getElementById('login-password').value;
+            const errDiv = document.getElementById('login-error');
+
+            errDiv.classList.add('hidden');
+
+            try {
+                await signInWithEmailAndPassword(auth, email, pass);
+            } catch (err) {
+                errDiv.innerText = "E-mail ou senha inválidos. Tente novamente.";
+                errDiv.classList.remove('hidden');
+            }
+        };
+
+        // Logout
+        window.handleLogout = function() {
+            signOut(auth);
+        };
+
+        // Firestore Realtime Listeners
         function initFirestoreListeners() {
-            // Ouvir Médicos
             onSnapshot(collection(db, "doctors"), (snapshot) => {
-                doctors = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                if (doctors.length === 0) {
-                    seedDefaultDoctors();
-                } else {
-                    renderDoctors();
-                }
+                doctors = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderDoctors();
             });
 
-            // Ouvir Agendamentos
             onSnapshot(collection(db, "appointments"), (snapshot) => {
-                appointments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                appointments = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
                 renderAppointments();
                 updateDashboardStats();
             });
+
+            onSnapshot(collection(db, "team"), (snapshot) => {
+                teamMembers = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+                renderTeamMembers();
+            });
         }
 
-        async function seedDefaultDoctors() {
-            const defaults = [
-                { name: "Dr. Carlos Silva", specialty: "Cardiologia", crm: "12345-DF", price: 350 },
-                { name: "Dra. Ana Beatriz", specialty: "Dermatologia", crm: "67890-DF", price: 300 }
-            ];
-            for (const docData of defaults) {
-                await addDoc(collection(db, "doctors"), docData);
-            }
-        }
-
-        // Renderizar Lista de Médicos
+        // Render Doctors
         function renderDoctors() {
             const gridSelection = document.getElementById('doctors-selection-grid');
             const gridManage = document.getElementById('doctors-manage-grid');
@@ -458,6 +540,23 @@
             }
         }
 
+        // Render Colaboradores
+        function renderTeamMembers() {
+            const grid = document.getElementById('users-manage-grid');
+            if (!grid) return;
+
+            grid.innerHTML = teamMembers.map(m => `
+                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
+                    <div>
+                        <h4 class="font-bold text-slate-900 dark:text-white text-sm">${m.name}</h4>
+                        <p class="text-xs text-slate-500">${m.email}</p>
+                    </div>
+                    <span class="px-2 py-1 rounded-lg bg-brand-50 text-brand-600 text-[10px] font-bold">Colaborador</span>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
         // Seleção de Médico
         window.selectDoctor = function(id) {
             selectedDoctorId = id;
@@ -467,7 +566,7 @@
             window.onDateSelected();
         };
 
-        // Renderizar Slots de Horários
+        // Render Horários
         window.onDateSelected = function() {
             const dateVal = document.getElementById('booking-date').value;
             const grid = document.getElementById('time-slots-grid');
@@ -498,6 +597,25 @@
             btn.classList.add('bg-brand-600', 'text-white', 'border-brand-600');
         };
 
+        // Criar Novo Colaborador (User)
+        window.handleNewUserSubmit = async function(e) {
+            e.preventDefault();
+            const name = document.getElementById('user-name').value;
+            const email = document.getElementById('user-email').value;
+            const pass = document.getElementById('user-password').value;
+
+            try {
+                // Registrar no Auth
+                await createUserWithEmailAndPassword(auth, email, pass);
+                // Guardar na coleção team
+                await addDoc(collection(db, "team"), { name, email, createdAt: new Date().toISOString() });
+                alert("Colaborador cadastrado com sucesso!");
+                toggleUserModal(false);
+            } catch (err) {
+                alert("Erro ao criar usuário: " + err.message);
+            }
+        };
+
         // Submeter Agendamento
         window.handleBookingSubmit = async function(e) {
             e.preventDefault();
@@ -522,18 +640,14 @@
             };
 
             await addDoc(collection(db, "appointments"), newAppointment);
-            
-            // Exibir comprovante
-            showReceipt(newAppointment);
 
-            // Reset Form
             document.getElementById('booking-form').reset();
             selectedDoctorId = null;
             selectedTimeSlot = null;
             switchTab('appointments');
         };
 
-        // Renderizar Lista Completa de Consultas
+        // Render Appointments
         function renderAppointments() {
             const list = document.getElementById('appointments-full-list');
             const recent = document.getElementById('recent-list');
@@ -542,7 +656,7 @@
 
             const sorted = [...appointments].sort((a,b) => new Date(b.date + 'T' + b.time) - new Date(a.date + 'T' + a.time));
 
-            const html = sorted.map(app => `
+            list.innerHTML = sorted.map(app => `
                 <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row justify-between gap-4 md:items-center">
                     <div>
                         <div class="flex items-center gap-2 mb-1">
@@ -555,12 +669,9 @@
                     <div class="flex items-center gap-2 border-t md:border-t-0 pt-2 md:pt-0 border-slate-100 dark:border-slate-700">
                         <button onclick="changeStatus('${app.id}', 'Concluída')" class="px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-600 text-xs font-medium hover:bg-emerald-100">Concluir</button>
                         <button onclick="changeStatus('${app.id}', 'Cancelada')" class="px-3 py-1.5 rounded-lg bg-rose-50 text-rose-600 text-xs font-medium hover:bg-rose-100">Cancelar</button>
-                        <button onclick='showReceipt(${JSON.stringify(app)})' class="p-2 text-slate-400 hover:text-brand-600"><i data-lucide="receipt" class="w-4 h-4"></i></button>
                     </div>
                 </div>
-            `).join('');
-
-            list.innerHTML = html || `<p class="text-center text-xs text-slate-400 py-8">Nenhuma consulta registrada.</p>`;
+            `).join('') || `<p class="text-center text-xs text-slate-400 py-8">Nenhuma consulta registrada.</p>`;
 
             if (recent) {
                 recent.innerHTML = sorted.slice(0, 3).map(app => `
@@ -580,30 +691,22 @@
             lucide.createIcons();
         }
 
-        // Alterar Status
         window.changeStatus = async function(id, status) {
             await updateDoc(doc(db, "appointments", id), { status });
         };
 
-        // Estatísticas
         function updateDashboardStats() {
             document.getElementById('stat-total').innerText = appointments.length;
-            
             const todayStr = new Date().toISOString().split('T')[0];
-            const todayApps = appointments.filter(a => a.date === todayStr);
-            document.getElementById('stat-today').innerText = todayApps.length;
-
+            document.getElementById('stat-today').innerText = appointments.filter(a => a.date === todayStr).length;
             const confirmed = appointments.filter(a => a.status === 'Agendada' || a.status === 'Concluída');
             document.getElementById('stat-confirmed').innerText = confirmed.length;
-
             const revenue = confirmed.reduce((acc, curr) => acc + Number(curr.price || 0), 0);
             document.getElementById('stat-revenue').innerText = `R$ ${revenue}`;
         }
 
-        // Modal Médicos
-        window.toggleDoctorModal = function(show) {
-            document.getElementById('modal-doctor').classList.toggle('hidden', !show);
-        };
+        window.toggleDoctorModal = function(show) { document.getElementById('modal-doctor').classList.toggle('hidden', !show); };
+        window.toggleUserModal = function(show) { document.getElementById('modal-user').classList.toggle('hidden', !show); };
 
         window.handleNewDoctorSubmit = async function(e) {
             e.preventDefault();
@@ -623,44 +726,16 @@
             }
         };
 
-        // Comprovantes
-        window.showReceipt = function(app) {
-            activeReceiptData = app;
-            const content = document.getElementById('receipt-content');
-            content.innerHTML = `
-                <p><strong>Paciente:</strong> ${app.patientName}</p>
-                <p><strong>Médico:</strong> ${app.doctorName} (${app.doctorSpecialty})</p>
-                <p><strong>Data/Hora:</strong> ${app.date.split('-').reverse().join('/')} às ${app.time}</p>
-                <p><strong>Valor:</strong> R$ ${app.price}</p>
-                <p class="text-xs text-slate-400 border-t pt-2 mt-2">Código do Ticket: #${app.id || 'NOVO'}</p>
-            `;
-            document.getElementById('modal-receipt').classList.remove('hidden');
-        };
-
-        window.toggleReceiptModal = function(show) {
-            document.getElementById('modal-receipt').classList.toggle('hidden', !show);
-        };
-
-        window.sendWhatsAppReceipt = function() {
-            if (!activeReceiptData) return;
-            const text = `Olá ${activeReceiptData.patientName}, sua consulta com ${activeReceiptData.doctorName} foi agendada para ${activeReceiptData.date.split('-').reverse().join('/')} às ${activeReceiptData.time}h.`;
-            window.open(`https://wa.me/55${activeReceiptData.patientPhone.replace(/\D/g,'')}?text=${encodeURIComponent(text)}`, '_blank');
-        };
-
-        // Troca de Abas
         window.switchTab = function(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
             document.getElementById(`tab-${tabId}`).classList.remove('hidden');
         };
 
-        // Tema
         window.toggleTheme = function() {
             document.documentElement.classList.toggle('dark');
         };
 
-        // Iniciar App
         window.onload = () => {
-            initFirestoreListeners();
             lucide.createIcons();
         };
     </script>
