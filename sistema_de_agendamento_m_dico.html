@@ -1,0 +1,1147 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MediCare Pro - Gestão & Agendamento Médico</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                            800: '#075985',
+                        },
+                        emerald: {
+                            500: '#10b981',
+                            600: '#059669',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 5px;
+            height: 5px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 99px;
+        }
+        .dark ::-webkit-scrollbar-thumb {
+            background: #475569;
+        }
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            #ticketModalContent, #ticketModalContent * {
+                visibility: visible;
+            }
+            #ticketModalContent {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                box-shadow: none !important;
+                border: none !important;
+            }
+            .no-print {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-full flex flex-col md:flex-row transition-colors duration-200 antialiased pb-20 md:pb-0">
+
+    <!-- DESKTOP SIDEBAR -->
+    <aside id="sidebar" class="hidden md:flex flex-col w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 h-screen sticky top-0 z-30 transition-all duration-300">
+        <!-- Logo -->
+        <div class="p-5 border-b border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-brand-600 text-white p-2.5 rounded-xl shadow-md">
+                    <i data-lucide="stethoscope" class="w-6 h-6"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold bg-gradient-to-r from-brand-600 to-teal-500 bg-clip-text text-transparent">MediCare</h1>
+                    <p class="text-xs text-slate-400 font-medium">Gestão & Consultas</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Links -->
+        <nav class="flex-1 p-4 space-y-1.5 overflow-y-auto">
+            <button onclick="switchTab('dashboard')" id="nav-dashboard" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                <span>Dashboard</span>
+            </button>
+
+            <button onclick="switchTab('booking')" id="nav-booking" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+                <span>Agendar Consulta</span>
+            </button>
+
+            <button onclick="switchTab('appointments')" id="nav-appointments" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <i data-lucide="calendar" class="w-5 h-5"></i>
+                <span>Minhas Consultas</span>
+            </button>
+
+            <button onclick="switchTab('doctors')" id="nav-doctors" class="nav-link w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium text-sm transition text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700">
+                <i data-lucide="user-round-cog" class="w-5 h-5"></i>
+                <span>Médicos & Equipe</span>
+            </button>
+        </nav>
+
+        <!-- Sidebar Footer -->
+        <div class="p-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
+            <button onclick="toggleDarkMode()" class="flex items-center gap-2 text-xs font-semibold text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200">
+                <i data-lucide="moon" id="themeIconDesktop" class="w-4 h-4"></i>
+                <span>Tema Claro/Escuro</span>
+            </button>
+        </div>
+    </aside>
+
+    <!-- MOBILE TOP BAR -->
+    <header class="md:hidden sticky top-0 z-30 bg-white/90 dark:bg-slate-800/90 backdrop-blur-md border-b border-slate-200 dark:border-slate-700 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+            <div class="bg-brand-600 text-white p-2 rounded-lg shadow-sm">
+                <i data-lucide="stethoscope" class="w-5 h-5"></i>
+            </div>
+            <span class="text-lg font-bold bg-gradient-to-r from-brand-600 to-teal-500 bg-clip-text text-transparent">MediCare</span>
+        </div>
+        <button onclick="toggleDarkMode()" class="p-2 text-slate-600 dark:text-slate-300 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700">
+            <i data-lucide="moon" id="themeIconMobile" class="w-5 h-5"></i>
+        </button>
+    </header>
+
+    <!-- MAIN CONTENT AREA -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8 space-y-6">
+
+        <!-- TAB 1: DASHBOARD -->
+        <section id="tab-dashboard" class="tab-content space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold tracking-tight">Visão Geral</h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">Resumo dos agendamentos e faturamento estimado.</p>
+                </div>
+                <button onclick="switchTab('booking')" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold shadow-md transition-all active:scale-95">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    Nova Consulta
+                </button>
+            </div>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-5">
+                <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Total Consultas</span>
+                        <div class="p-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl">
+                            <i data-lucide="calendar" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p class="text-2xl sm:text-3xl font-extrabold" id="dashTotal">0</p>
+                    <p class="text-xs text-slate-400 mt-1">Registradas no sistema</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Para Hoje</span>
+                        <div class="p-2 bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-xl">
+                            <i data-lucide="clock" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-emerald-600 dark:text-emerald-400" id="dashToday">0</p>
+                    <p class="text-xs text-slate-400 mt-1">Atendimentos do dia</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Confirmadas</span>
+                        <div class="p-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl">
+                            <i data-lucide="check-circle-2" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p class="text-2xl sm:text-3xl font-extrabold text-indigo-600 dark:text-indigo-400" id="dashConfirmed">0</p>
+                    <p class="text-xs text-slate-400 mt-1">Pacientes confirmados</p>
+                </div>
+
+                <div class="bg-white dark:bg-slate-800 p-4 sm:p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm">
+                    <div class="flex items-center justify-between text-slate-400 mb-2">
+                        <span class="text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400">Receita Prevista</span>
+                        <div class="p-2 bg-teal-50 dark:bg-teal-900/30 text-teal-600 dark:text-teal-400 rounded-xl">
+                            <i data-lucide="dollar-sign" class="w-5 h-5"></i>
+                        </div>
+                    </div>
+                    <p class="text-xl sm:text-2xl font-extrabold text-teal-600 dark:text-teal-400" id="dashRevenue">R$ 0</p>
+                    <p class="text-xs text-slate-400 mt-1">Valor acumulado</p>
+                </div>
+            </div>
+
+            <!-- Recent Appointments List -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 p-5 shadow-sm space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-bold text-base flex items-center gap-2">
+                        <i data-lucide="calendar-days" class="w-5 h-5 text-brand-600"></i>
+                        Próximos Atendimentos
+                    </h3>
+                    <button onclick="switchTab('appointments')" class="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline">Ver todos</button>
+                </div>
+                <div id="dashUpcomingList" class="space-y-3">
+                    <!-- Loaded via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: BOOKING FORM -->
+        <section id="tab-booking" class="tab-content hidden space-y-6">
+            <div>
+                <h2 class="text-2xl font-bold tracking-tight">Agendar Consulta</h2>
+                <p class="text-slate-500 dark:text-slate-400 text-sm">Selecione o profissional, data, horário e preencha os dados do paciente.</p>
+            </div>
+
+            <form id="bookingForm" onsubmit="handleBookingSubmit(event)" class="space-y-6">
+                <!-- Step 1: Doctor Selection -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                    <label class="block font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 text-xs flex items-center justify-center">1</span>
+                        Selecione o Profissional
+                    </label>
+
+                    <div id="doctorCardsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                        <!-- Loaded dynamically -->
+                    </div>
+                    <input type="hidden" id="selectedDoctorId" required>
+                </div>
+
+                <!-- Step 2: Date & Slots -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                    <label class="block font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 text-xs flex items-center justify-center">2</span>
+                        Escolha Data e Horário
+                    </label>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Data da Consulta *</label>
+                            <input type="date" id="bookingDate" required onchange="renderTimeSlots()" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Horários Disponíveis *</label>
+                            <div id="slotsGrid" class="grid grid-cols-3 sm:grid-cols-4 gap-2">
+                                <p class="text-xs text-slate-400 col-span-full italic py-2">Selecione um médico e uma data primeiro.</p>
+                            </div>
+                            <input type="hidden" id="selectedTime" required>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Step 3: Patient Information -->
+                <div class="bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm space-y-4">
+                    <label class="block font-bold text-sm text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                        <span class="w-6 h-6 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 text-xs flex items-center justify-center">3</span>
+                        Dados do Paciente
+                    </label>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Nome Completo *</label>
+                            <input type="text" id="patientName" required placeholder="Ex: Maria das Dores" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">CPF *</label>
+                            <input type="text" id="patientCPF" required placeholder="000.000.000-00" oninput="maskCPF(this)" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Telefone / WhatsApp *</label>
+                            <input type="tel" id="patientPhone" required placeholder="(11) 99999-9999" oninput="maskPhone(this)" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">E-mail (opcional)</label>
+                            <input type="email" id="patientEmail" placeholder="paciente@email.com" class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none">
+                        </div>
+
+                        <div class="sm:col-span-2">
+                            <label class="block text-xs font-semibold text-slate-500 dark:text-slate-400 mb-1">Sintomas / Motivo da Consulta</label>
+                            <textarea id="patientNotes" rows="3" placeholder="Descreva sucintamente o motivo..." class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500 focus:outline-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="w-full py-4 bg-brand-600 hover:bg-brand-700 text-white font-bold rounded-2xl shadow-lg transition-all active:scale-[0.99] flex items-center justify-center gap-2 text-base">
+                    <i data-lucide="check-circle" class="w-5 h-5"></i>
+                    Confirmar Agendamento
+                </button>
+            </form>
+        </section>
+
+        <!-- TAB 3: APPOINTMENTS LIST -->
+        <section id="tab-appointments" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold tracking-tight">Minhas Consultas</h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">Gerencie, filtre e acompanhe todos os atendimentos.</p>
+                </div>
+            </div>
+
+            <!-- Filters Bar -->
+            <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col md:flex-row items-center justify-between gap-3">
+                <div class="relative w-full md:w-80">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                    <input type="text" id="searchFilter" oninput="renderAppointmentsList()" placeholder="Buscar por nome ou CPF..." class="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="flex flex-wrap sm:flex-nowrap w-full md:w-auto gap-2">
+                    <select id="doctorFilter" onchange="renderAppointmentsList()" class="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none">
+                        <option value="">Todos os Médicos</option>
+                    </select>
+
+                    <select id="statusFilter" onchange="renderAppointmentsList()" class="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none">
+                        <option value="">Todos os Status</option>
+                        <option value="Confirmado">Confirmado</option>
+                        <option value="Pendente">Pendente</option>
+                        <option value="Cancelado">Cancelado</option>
+                    </select>
+
+                    <input type="date" id="dateFilter" onchange="renderAppointmentsList()" class="w-full sm:w-auto px-3 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:outline-none">
+                </div>
+            </div>
+
+            <!-- List Desktop Table / Mobile Cards -->
+            <div class="bg-white dark:bg-slate-800 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm overflow-hidden">
+                <!-- Table View (Desktop) -->
+                <div class="hidden md:block overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 dark:bg-slate-900/60 text-xs font-semibold text-slate-400 uppercase border-b border-slate-200 dark:border-slate-700">
+                                <th class="p-4">Paciente</th>
+                                <th class="p-4">Médico & Especialidade</th>
+                                <th class="p-4">Data & Hora</th>
+                                <th class="p-4">Valor</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4 text-right">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody id="appointmentsTable" class="divide-y divide-slate-200 dark:divide-slate-700 text-sm">
+                            <!-- JS populated -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Cards View (Mobile) -->
+                <div id="appointmentsCards" class="md:hidden divide-y divide-slate-200 dark:divide-slate-700">
+                    <!-- JS populated -->
+                </div>
+
+                <!-- Empty State -->
+                <div id="emptyAppointments" class="hidden p-10 text-center space-y-3">
+                    <i data-lucide="calendar-x2" class="w-12 h-12 text-slate-300 mx-auto"></i>
+                    <p class="text-slate-500 dark:text-slate-400 font-medium text-sm">Nenhuma consulta encontrada com esses filtros.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 4: DOCTORS MANAGEMENT -->
+        <section id="tab-doctors" class="tab-content hidden space-y-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold tracking-tight">Médicos & Especialistas</h2>
+                    <p class="text-slate-500 dark:text-slate-400 text-sm">Corpo clínico cadastrado e horários de atendimento.</p>
+                </div>
+                <button onclick="openDoctorModal()" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-brand-600 hover:bg-brand-700 text-white px-4 py-2.5 rounded-xl text-sm font-semibold shadow-md transition">
+                    <i data-lucide="user-plus" class="w-4 h-4"></i>
+                    Cadastrar Médico
+                </button>
+            </div>
+
+            <div id="doctorsListGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- JS populated -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- MOBILE BOTTOM NAVIGATION BAR -->
+    <nav class="md:hidden fixed bottom-0 inset-x-0 bg-white/95 dark:bg-slate-800/95 backdrop-blur-md border-t border-slate-200 dark:border-slate-700 z-40 px-2 py-1.5 flex justify-around items-center">
+        <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-3 text-slate-400 dark:text-slate-500">
+            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+            <span class="text-[10px] font-semibold mt-1">Inicio</span>
+        </button>
+        <button onclick="switchTab('booking')" id="mobile-nav-booking" class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-3 text-slate-400 dark:text-slate-500">
+            <i data-lucide="calendar-plus" class="w-5 h-5"></i>
+            <span class="text-[10px] font-semibold mt-1">Agendar</span>
+        </button>
+        <button onclick="switchTab('appointments')" id="mobile-nav-appointments" class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-3 text-slate-400 dark:text-slate-500">
+            <i data-lucide="calendar" class="w-5 h-5"></i>
+            <span class="text-[10px] font-semibold mt-1">Consultas</span>
+        </button>
+        <button onclick="switchTab('doctors')" id="mobile-nav-doctors" class="mobile-nav-btn flex flex-col items-center justify-center py-1 px-3 text-slate-400 dark:text-slate-500">
+            <i data-lucide="user-round-cog" class="w-5 h-5"></i>
+            <span class="text-[10px] font-semibold mt-1">Médicos</span>
+        </button>
+    </nav>
+
+    <!-- TICKET / COMPROVANTE MODAL -->
+    <div id="ticketModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-md w-full shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden" id="ticketModalContent">
+            <!-- Modal Header -->
+            <div class="bg-brand-600 p-6 text-white text-center relative">
+                <button onclick="closeTicketModal()" class="no-print absolute top-4 right-4 p-1.5 rounded-full bg-white/20 hover:bg-white/30 text-white">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i data-lucide="check-circle-2" class="w-7 h-7 text-white"></i>
+                </div>
+                <h3 class="text-xl font-bold">Comprovante de Agendamento</h3>
+                <p class="text-xs text-brand-100 mt-1" id="ticketCode">CÓD: #000000</p>
+            </div>
+
+            <!-- Modal Content Body -->
+            <div class="p-6 space-y-4 text-sm" id="ticketDetails">
+                <!-- JS populated -->
+            </div>
+
+            <!-- Modal Actions Footer -->
+            <div class="p-4 bg-slate-50 dark:bg-slate-900 border-t border-slate-200 dark:border-slate-700 flex flex-col gap-2 no-print">
+                <button onclick="sendWhatsAppTicket()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl flex items-center justify-center gap-2 transition">
+                    <i data-lucide="message-square" class="w-4 h-4"></i>
+                    Enviar por WhatsApp
+                </button>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="window.print()" class="py-2.5 bg-slate-200 dark:bg-slate-700 hover:bg-slate-300 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 font-semibold rounded-xl flex items-center justify-center gap-1.5 text-xs transition">
+                        <i data-lucide="printer" class="w-4 h-4"></i> Imprimir
+                    </button>
+                    <button onclick="closeTicketModal()" class="py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl flex items-center justify-center text-xs transition">
+                        Concluído
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- NEW DOCTOR MODAL -->
+    <div id="doctorModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-slate-800 rounded-3xl max-w-lg w-full shadow-2xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+                <h3 class="font-bold text-lg flex items-center gap-2">
+                    <i data-lucide="user-plus" class="w-5 h-5 text-brand-600"></i>
+                    Cadastrar Novo Médico
+                </h3>
+                <button onclick="closeDoctorModal()" class="p-1 rounded-lg text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <form id="doctorForm" onsubmit="saveDoctor(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Nome Completo *</label>
+                    <input type="text" id="docName" required placeholder="Ex: Dr. Roberto Santos" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Especialidade *</label>
+                        <input type="text" id="docSpecialty" required placeholder="Ex: Cardiologia" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">CRM *</label>
+                        <input type="text" id="docCRM" required placeholder="CRM/SP 123456" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Valor Consulta (R$) *</label>
+                        <input type="number" id="docPrice" required min="0" step="10" placeholder="250" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">URL da Avatar/Foto</label>
+                        <input type="url" id="docAvatar" placeholder="https://..." class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Horários de Atendimento (separados por vírgula)</label>
+                    <input type="text" id="docSlots" placeholder="08:00, 09:00, 10:00, 14:00, 15:00" class="w-full px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="flex justify-end gap-2 pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onclick="closeDoctorModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700 text-sm font-semibold">Cancelar</button>
+                    <button type="submit" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-700 text-white font-semibold rounded-xl text-sm">Salvar Profissional</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="fixed bottom-16 md:bottom-5 right-5 z-50 transform translate-y-20 opacity-0 transition-all duration-300 flex items-center gap-3 px-4 py-3 rounded-2xl shadow-xl bg-slate-900 text-white dark:bg-slate-100 dark:text-slate-900">
+        <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-400 dark:text-emerald-600"></i>
+        <span id="toastMsg" class="text-xs sm:text-sm font-medium">Ação concluída com sucesso!</span>
+    </div>
+
+    <!-- SCRIPT LOGIC -->
+    <script>
+        // Storage Keys
+        const STORAGE_APPOINTMENTS = 'medicare_appts_v2';
+        const STORAGE_DOCTORS = 'medicare_docs_v2';
+
+        // Mock Initial Doctors
+        const initialDoctors = [
+            {
+                id: 'doc-1',
+                name: 'Dr. Carlos Silva',
+                specialty: 'Cardiologia',
+                crm: 'CRM/SP 145.890',
+                price: 350,
+                avatar: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=300',
+                slots: ['08:00', '09:00', '10:30', '14:00', '15:30', '16:30']
+            },
+            {
+                id: 'doc-2',
+                name: 'Dra. Ana Beatriz',
+                specialty: 'Dermatologia',
+                crm: 'CRM/SP 198.220',
+                price: 300,
+                avatar: 'https://images.unsplash.com/photo-1594824813566-88a226454651?auto=format&fit=crop&q=80&w=300',
+                slots: ['09:00', '10:00', '11:00', '13:30', '14:30', '15:30']
+            },
+            {
+                id: 'doc-3',
+                name: 'Dr. Roberto Lima',
+                specialty: 'Ortopedia',
+                crm: 'CRM/SP 112.450',
+                price: 280,
+                avatar: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&q=80&w=300',
+                slots: ['08:30', '09:30', '10:30', '14:00', '15:00']
+            }
+        ];
+
+        // Mock Initial Appointments
+        const initialAppointments = [
+            {
+                id: 'APT-8921',
+                patientName: 'Mariana Oliveira',
+                patientCPF: '123.456.789-00',
+                patientPhone: '(11) 98765-4321',
+                patientEmail: 'mariana@email.com',
+                doctorId: 'doc-1',
+                doctorName: 'Dr. Carlos Silva',
+                doctorSpecialty: 'Cardiologia',
+                price: 350,
+                date: new Date().toISOString().split('T')[0], // Today
+                time: '09:00',
+                status: 'Confirmado',
+                notes: 'Retorno de exames de rotina'
+            },
+            {
+                id: 'APT-4310',
+                patientName: 'Fernando Costa',
+                patientCPF: '987.654.321-11',
+                patientPhone: '(11) 91234-5678',
+                patientEmail: 'fernando@email.com',
+                doctorId: 'doc-2',
+                doctorName: 'Dra. Ana Beatriz',
+                doctorSpecialty: 'Dermatologia',
+                price: 300,
+                date: '2026-11-10',
+                time: '14:30',
+                status: 'Pendente',
+                notes: 'Avaliando manchas na pele'
+            }
+        ];
+
+        // App State
+        let doctors = [];
+        let appointments = [];
+        let currentTicket = null;
+
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+            loadDarkMode();
+            loadStorageData();
+            switchTab('dashboard');
+            lucide.createIcons();
+
+            // Default min date for booking: today
+            document.getElementById('bookingDate').min = new Date().toISOString().split('T')[0];
+        });
+
+        // Load or Save Data
+        function loadStorageData() {
+            const savedDocs = localStorage.getItem(STORAGE_DOCTORS);
+            doctors = savedDocs ? JSON.parse(savedDocs) : initialDoctors;
+            if(!savedDocs) localStorage.setItem(STORAGE_DOCTORS, JSON.stringify(doctors));
+
+            const savedAppts = localStorage.getItem(STORAGE_APPOINTMENTS);
+            appointments = savedAppts ? JSON.parse(savedAppts) : initialAppointments;
+            if(!savedAppts) localStorage.setItem(STORAGE_APPOINTMENTS, JSON.stringify(appointments));
+        }
+
+        function saveData() {
+            localStorage.setItem(STORAGE_DOCTORS, JSON.stringify(doctors));
+            localStorage.setItem(STORAGE_APPOINTMENTS, JSON.stringify(appointments));
+        }
+
+        // Tab Switcher
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+
+            // Style desktop navs
+            document.querySelectorAll('.nav-link').forEach(btn => {
+                btn.classList.remove('bg-brand-50', 'dark:bg-slate-700', 'text-brand-600', 'dark:text-brand-400', 'font-bold');
+            });
+            const activeNav = document.getElementById(`nav-${tabId}`);
+            if(activeNav) {
+                activeNav.classList.add('bg-brand-50', 'dark:bg-slate-700', 'text-brand-600', 'dark:text-brand-400', 'font-bold');
+            }
+
+            // Style mobile navs
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => {
+                btn.classList.remove('text-brand-600', 'dark:text-brand-400');
+                btn.classList.add('text-slate-400', 'dark:text-slate-500');
+            });
+            const activeMobileNav = document.getElementById(`mobile-nav-${tabId}`);
+            if(activeMobileNav) {
+                activeMobileNav.classList.remove('text-slate-400', 'dark:text-slate-500');
+                activeMobileNav.classList.add('text-brand-600', 'dark:text-brand-400');
+            }
+
+            // Tab-specific renders
+            if (tabId === 'dashboard') renderDashboard();
+            if (tabId === 'booking') renderDoctorSelectionCards();
+            if (tabId === 'appointments') renderAppointmentsList();
+            if (tabId === 'doctors') renderDoctorsList();
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            lucide.createIcons();
+        }
+
+        // --- DASHBOARD RENDER ---
+        function renderDashboard() {
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            const total = appointments.length;
+            const todayCount = appointments.filter(a => a.date === todayStr && a.status !== 'Cancelado').length;
+            const confirmedCount = appointments.filter(a => a.status === 'Confirmado').length;
+            const revenue = appointments
+                .filter(a => a.status !== 'Cancelado')
+                .reduce((acc, curr) => acc + (Number(curr.price) || 0), 0);
+
+            document.getElementById('dashTotal').textContent = total;
+            document.getElementById('dashToday').textContent = todayCount;
+            document.getElementById('dashConfirmed').textContent = confirmedCount;
+            document.getElementById('dashRevenue').textContent = `R$ ${revenue.toLocaleString('pt-BR')}`;
+
+            // Recent Upcoming
+            const upcomingList = document.getElementById('dashUpcomingList');
+            upcomingList.innerHTML = '';
+
+            const sorted = [...appointments]
+                .filter(a => a.status !== 'Cancelado')
+                .sort((a, b) => new Date(`${a.date}T${a.time}`) - new Date(`${b.date}T${b.time}`))
+                .slice(0, 4);
+
+            if (sorted.length === 0) {
+                upcomingList.innerHTML = `<p class="text-xs text-slate-400 italic">Nenhuma consulta futura agendada.</p>`;
+                return;
+            }
+
+            sorted.forEach(app => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center justify-between p-3.5 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-slate-100 dark:border-slate-700/60';
+                div.innerHTML = `
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-full bg-brand-100 dark:bg-brand-900/50 text-brand-600 dark:text-brand-400 font-bold flex items-center justify-center text-xs">
+                            ${app.patientName.split(' ').map(n=>n[0]).join('').slice(0,2)}
+                        </div>
+                        <div>
+                            <h4 class="font-bold text-sm">${escapeHtml(app.patientName)}</h4>
+                            <p class="text-xs text-slate-400">${escapeHtml(app.doctorName)} • <span class="font-semibold text-brand-600 dark:text-brand-400">R$ ${app.price}</span></p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-xs font-bold">${formatDate(app.date)}</p>
+                        <p class="text-xs text-slate-400">${app.time} hrs</p>
+                    </div>
+                `;
+                upcomingList.appendChild(div);
+            });
+        }
+
+        // --- BOOKING FORM RENDER & LOGIC ---
+        function renderDoctorSelectionCards() {
+            const container = document.getElementById('doctorCardsGrid');
+            container.innerHTML = '';
+
+            doctors.forEach(doc => {
+                const card = document.createElement('div');
+                card.id = `doc-card-${doc.id}`;
+                card.onclick = () => selectDoctor(doc.id);
+                card.className = `doctor-card cursor-pointer p-4 rounded-2xl border transition-all flex items-center gap-3.5 bg-slate-50 dark:bg-slate-900 border-slate-200 dark:border-slate-700 hover:border-brand-500`;
+                card.innerHTML = `
+                    <img src="${doc.avatar}" alt="${doc.name}" class="w-14 h-14 rounded-full object-cover border-2 border-brand-500/20">
+                    <div class="flex-1 min-w-0">
+                        <h4 class="font-bold text-sm truncate">${escapeHtml(doc.name)}</h4>
+                        <p class="text-xs text-brand-600 dark:text-brand-400 font-semibold">${escapeHtml(doc.specialty)}</p>
+                        <p class="text-[11px] text-slate-400">${doc.crm}</p>
+                        <p class="text-xs font-bold text-slate-700 dark:text-slate-300 mt-1">R$ ${doc.price},00</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function selectDoctor(docId) {
+            document.getElementById('selectedDoctorId').value = docId;
+            document.querySelectorAll('.doctor-card').forEach(c => {
+                c.classList.remove('border-brand-600', 'ring-2', 'ring-brand-500', 'bg-brand-50/50', 'dark:bg-slate-800');
+            });
+            const selectedCard = document.getElementById(`doc-card-${docId}`);
+            if (selectedCard) {
+                selectedCard.classList.add('border-brand-600', 'ring-2', 'ring-brand-500', 'bg-brand-50/50', 'dark:bg-slate-800');
+            }
+            renderTimeSlots();
+        }
+
+        function renderTimeSlots() {
+            const docId = document.getElementById('selectedDoctorId').value;
+            const date = document.getElementById('bookingDate').value;
+            const slotsGrid = document.getElementById('slotsGrid');
+            slotsGrid.innerHTML = '';
+
+            if (!docId || !date) {
+                slotsGrid.innerHTML = `<p class="text-xs text-slate-400 col-span-full italic py-2">Selecione um médico e uma data.</p>`;
+                return;
+            }
+
+            const doc = doctors.find(d => d.id === docId);
+            if (!doc) return;
+
+            // Check taken slots
+            const takenSlots = appointments
+                .filter(a => a.doctorId === docId && a.date === date && a.status !== 'Cancelado')
+                .map(a => a.time);
+
+            doc.slots.forEach(slot => {
+                const isTaken = takenSlots.includes(slot);
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.disabled = isTaken;
+                btn.textContent = slot;
+                btn.className = isTaken
+                    ? 'py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-100 dark:bg-slate-800/40 text-slate-400 text-xs font-medium cursor-not-allowed line-through'
+                    : 'slot-btn py-2 px-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-xs font-semibold hover:border-brand-500 hover:text-brand-600 transition';
+
+                btn.onclick = () => {
+                    document.querySelectorAll('.slot-btn').forEach(b => b.classList.remove('bg-brand-600', 'text-white', 'border-brand-600'));
+                    btn.classList.add('bg-brand-600', 'text-white', 'border-brand-600');
+                    document.getElementById('selectedTime').value = slot;
+                };
+
+                slotsGrid.appendChild(btn);
+            });
+        }
+
+        function handleBookingSubmit(e) {
+            e.preventDefault();
+
+            const docId = document.getElementById('selectedDoctorId').value;
+            const date = document.getElementById('bookingDate').value;
+            const time = document.getElementById('selectedTime').value;
+
+            if (!docId) { alert('Selecione um profissional médico.'); return; }
+            if (!time) { alert('Escolha um horário para a consulta.'); return; }
+
+            const doc = doctors.find(d => d.id === docId);
+
+            const newAppt = {
+                id: 'APT-' + Math.floor(1000 + Math.random() * 9000),
+                patientName: document.getElementById('patientName').value.trim(),
+                patientCPF: document.getElementById('patientCPF').value,
+                patientPhone: document.getElementById('patientPhone').value,
+                patientEmail: document.getElementById('patientEmail').value,
+                doctorId: doc.id,
+                doctorName: doc.name,
+                doctorSpecialty: doc.specialty,
+                price: doc.price,
+                date: date,
+                time: time,
+                status: 'Confirmado',
+                notes: document.getElementById('patientNotes').value.trim()
+            };
+
+            appointments.unshift(newAppt);
+            saveData();
+
+            // Reset Form
+            document.getElementById('bookingForm').reset();
+            document.getElementById('selectedDoctorId').value = '';
+            document.getElementById('selectedTime').value = '';
+            document.querySelectorAll('.doctor-card').forEach(c => c.classList.remove('border-brand-600', 'ring-2', 'ring-brand-500', 'bg-brand-50/50'));
+            document.getElementById('slotsGrid').innerHTML = '<p class="text-xs text-slate-400 col-span-full italic py-2">Selecione um médico e uma data primeiro.</p>';
+
+            showToast('Consulta agendada com sucesso!');
+            openTicketModal(newAppt);
+        }
+
+        // --- APPOINTMENTS LIST RENDER ---
+        function renderAppointmentsList() {
+            const tableBody = document.getElementById('appointmentsTable');
+            const cardsContainer = document.getElementById('appointmentsCards');
+            const emptyState = document.getElementById('emptyAppointments');
+
+            // Populate Doctors filter select if empty
+            const docFilterSelect = document.getElementById('doctorFilter');
+            if (docFilterSelect.children.length <= 1) {
+                doctors.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = d.name;
+                    docFilterSelect.appendChild(opt);
+                });
+            }
+
+            const search = document.getElementById('searchFilter').value.toLowerCase();
+            const docFilter = document.getElementById('doctorFilter').value;
+            const statusFilter = document.getElementById('statusFilter').value;
+            const dateFilter = document.getElementById('dateFilter').value;
+
+            const filtered = appointments.filter(app => {
+                const matchesSearch = app.patientName.toLowerCase().includes(search) || app.patientCPF.includes(search);
+                const matchesDoc = !docFilter || app.doctorName === docFilter;
+                const matchesStatus = !statusFilter || app.status === statusFilter;
+                const matchesDate = !dateFilter || app.date === dateFilter;
+                return matchesSearch && matchesDoc && matchesStatus && matchesDate;
+            });
+
+            tableBody.innerHTML = '';
+            cardsContainer.innerHTML = '';
+
+            if (filtered.length === 0) {
+                emptyState.classList.remove('hidden');
+                return;
+            } else {
+                emptyState.classList.add('hidden');
+            }
+
+            filtered.forEach(app => {
+                // Desktop Table Row
+                const tr = document.createElement('tr');
+                tr.className = 'border-b border-slate-100 dark:border-slate-700/60 hover:bg-slate-50/50 dark:hover:bg-slate-700/30 transition';
+                tr.innerHTML = `
+                    <td class="p-4">
+                        <p class="font-bold text-slate-900 dark:text-slate-100">${escapeHtml(app.patientName)}</p>
+                        <p class="text-xs text-slate-400">${app.patientCPF} • ${app.patientPhone}</p>
+                    </td>
+                    <td class="p-4">
+                        <p class="font-semibold text-slate-800 dark:text-slate-200">${escapeHtml(app.doctorName)}</p>
+                        <p class="text-xs text-brand-600 dark:text-brand-400">${escapeHtml(app.doctorSpecialty)}</p>
+                    </td>
+                    <td class="p-4 whitespace-nowrap">
+                        <p class="font-semibold">${formatDate(app.date)}</p>
+                        <p class="text-xs text-slate-400">${app.time} hrs</p>
+                    </td>
+                    <td class="p-4 font-bold text-slate-800 dark:text-slate-200">
+                        R$ ${app.price}
+                    </td>
+                    <td class="p-4">${getStatusBadge(app.status)}</td>
+                    <td class="p-4 text-right whitespace-nowrap">
+                        <button onclick="openTicketModalById('${app.id}')" class="p-2 text-slate-400 hover:text-brand-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" title="Ver Comprovante">
+                            <i data-lucide="receipt" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="toggleAppointmentStatus('${app.id}')" class="p-2 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" title="Alterar Status">
+                            <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="cancelAppointment('${app.id}')" class="p-2 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700" title="Cancelar">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </td>
+                `;
+                tableBody.appendChild(tr);
+
+                // Mobile Card
+                const card = document.createElement('div');
+                card.className = 'p-4 space-y-3';
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <h4 class="font-bold text-base">${escapeHtml(app.patientName)}</h4>
+                            <p class="text-xs text-slate-400">${app.patientPhone}</p>
+                        </div>
+                        ${getStatusBadge(app.status)}
+                    </div>
+                    <div class="p-3 bg-slate-50 dark:bg-slate-900 rounded-xl text-xs space-y-1">
+                        <p><strong class="text-slate-700 dark:text-slate-300">Médico:</strong> ${escapeHtml(app.doctorName)} (${app.doctorSpecialty})</p>
+                        <p><strong class="text-slate-700 dark:text-slate-300">Data/Hora:</strong> ${formatDate(app.date)} às ${app.time}h</p>
+                        <p><strong class="text-slate-700 dark:text-slate-300">Valor:</strong> R$ ${app.price},00</p>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-1">
+                        <button onclick="openTicketModalById('${app.id}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 flex items-center gap-1">
+                            <i data-lucide="receipt" class="w-3.5 h-3.5"></i> Ticket
+                        </button>
+                        <button onclick="toggleAppointmentStatus('${app.id}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-emerald-50 dark:bg-emerald-900/40 text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                            <i data-lucide="refresh-cw" class="w-3.5 h-3.5"></i> Status
+                        </button>
+                        <button onclick="cancelAppointment('${app.id}')" class="text-xs font-semibold px-3 py-1.5 rounded-lg bg-rose-50 dark:bg-rose-900/40 text-rose-600 dark:text-rose-400 flex items-center gap-1">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Cancelar
+                        </button>
+                    </div>
+                `;
+                cardsContainer.appendChild(card);
+            });
+
+            lucide.createIcons();
+        }
+
+        function toggleAppointmentStatus(id) {
+            const app = appointments.find(a => a.id === id);
+            if (!app) return;
+            const flow = { 'Pendente': 'Confirmado', 'Confirmado': 'Cancelado', 'Cancelado': 'Pendente' };
+            app.status = flow[app.status] || 'Pendente';
+            saveData();
+            renderAppointmentsList();
+            showToast(`Status alterado para: ${app.status}`);
+        }
+
+        function cancelAppointment(id) {
+            if(confirm('Deseja realmente cancelar este agendamento?')) {
+                const app = appointments.find(a => a.id === id);
+                if(app) {
+                    app.status = 'Cancelado';
+                    saveData();
+                    renderAppointmentsList();
+                    showToast('Consulta cancelada.');
+                }
+            }
+        }
+
+        // --- DOCTORS LIST & CREATION ---
+        function renderDoctorsList() {
+            const grid = document.getElementById('doctorsListGrid');
+            grid.innerHTML = '';
+
+            doctors.forEach(doc => {
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-slate-800 p-5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex flex-col justify-between space-y-4';
+                card.innerHTML = `
+                    <div class="flex items-start gap-4">
+                        <img src="${doc.avatar}" alt="${doc.name}" class="w-16 h-16 rounded-full object-cover border-2 border-brand-500/20">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-base">${escapeHtml(doc.name)}</h3>
+                            <p class="text-xs font-semibold text-brand-600 dark:text-brand-400">${escapeHtml(doc.specialty)}</p>
+                            <p class="text-xs text-slate-400">${doc.crm}</p>
+                            <p class="text-sm font-bold text-slate-800 dark:text-slate-200 mt-2">R$ ${doc.price},00 / consulta</p>
+                        </div>
+                    </div>
+                    <div>
+                        <p class="text-xs font-semibold text-slate-400 mb-2">Horários de Atendimento:</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            ${doc.slots.map(s => `<span class="text-[11px] font-semibold px-2 py-1 rounded-lg bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">${s}</span>`).join('')}
+                        </div>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function openDoctorModal() {
+            document.getElementById('doctorModal').classList.remove('hidden');
+        }
+
+        function closeDoctorModal() {
+            document.getElementById('doctorModal').classList.add('hidden');
+            document.getElementById('doctorForm').reset();
+        }
+
+        function saveDoctor(e) {
+            e.preventDefault();
+
+            const slotsInput = document.getElementById('docSlots').value;
+            const slotsArray = slotsInput 
+                ? slotsInput.split(',').map(s => s.trim()).filter(Boolean)
+                : ['08:00', '09:00', '10:00', '14:00', '15:00'];
+
+            const newDoc = {
+                id: 'doc-' + Date.now(),
+                name: document.getElementById('docName').value.trim(),
+                specialty: document.getElementById('docSpecialty').value.trim(),
+                crm: document.getElementById('docCRM').value.trim(),
+                price: Number(document.getElementById('docPrice').value) || 200,
+                avatar: document.getElementById('docAvatar').value.trim() || 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=300',
+                slots: slotsArray
+            };
+
+            doctors.push(newDoc);
+            saveData();
+            closeDoctorModal();
+            renderDoctorsList();
+            showToast('Novo médico cadastrado!');
+        }
+
+        // --- TICKET MODAL & WHATSAPP ---
+        function openTicketModalById(id) {
+            const app = appointments.find(a => a.id === id);
+            if(app) openTicketModal(app);
+        }
+
+        function openTicketModal(appt) {
+            currentTicket = appt;
+            document.getElementById('ticketCode').textContent = `CÓD: #${appt.id}`;
+
+            const details = document.getElementById('ticketDetails');
+            details.innerHTML = `
+                <div class="space-y-3">
+                    <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400">Paciente:</span>
+                        <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(appt.patientName)}</strong>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400">CPF:</span>
+                        <span class="font-medium">${appt.patientCPF}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400">Médico:</span>
+                        <strong class="text-slate-800 dark:text-slate-200">${escapeHtml(appt.doctorName)}</strong>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400">Especialidade:</span>
+                        <span class="font-medium">${escapeHtml(appt.doctorSpecialty)}</span>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400">Data e Hora:</span>
+                        <strong class="text-brand-600 dark:text-brand-400">${formatDate(appt.date)} às ${appt.time}h</strong>
+                    </div>
+                    <div class="flex justify-between py-2 border-b border-slate-100 dark:border-slate-700">
+                        <span class="text-slate-400">Valor da Consulta:</span>
+                        <strong class="text-emerald-600">R$ ${appt.price},00</strong>
+                    </div>
+                    <div class="flex justify-between py-2">
+                        <span class="text-slate-400">Status:</span>
+                        ${getStatusBadge(appt.status)}
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('ticketModal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function closeTicketModal() {
+            document.getElementById('ticketModal').classList.add('hidden');
+        }
+
+        function sendWhatsAppTicket() {
+            if(!currentTicket) return;
+            const phone = currentTicket.patientPhone.replace(/\D/g, '');
+            const msg = `Olá *${currentTicket.patientName}*! Seu agendamento na *MediCare* foi confirmado.%0A%0A` +
+                        `*Médico:* ${currentTicket.doctorName} (${currentTicket.doctorSpecialty})%0A` +
+                        `*Data:* ${formatDate(currentTicket.date)} às ${currentTicket.time}h%0A` +
+                        `*Código:* #${currentTicket.id}%0A%0A` +
+                        `Te aguardamos!`;
+            
+            window.open(`https://wa.me/55${phone}?text=${msg}`, '_blank');
+        }
+
+        // --- UTILS & HELPERS ---
+        function getStatusBadge(status) {
+            if(status === 'Confirmado') {
+                return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Confirmado
+                </span>`;
+            }
+            if(status === 'Pendente') {
+                return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pendente
+                </span>`;
+            }
+            return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-300">
+                <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Cancelado
+            </span>`;
+        }
+
+        function formatDate(dateStr) {
+            if(!dateStr) return '';
+            const [y, m, d] = dateStr.split('-');
+            return `${d}/${m}/${y}`;
+        }
+
+        function maskCPF(i) {
+            let v = i.value.replace(/\D/g, '');
+            v = v.replace(/(\d{3})(\d)/, '$1.$2');
+            v = v.replace(/(\d{3})(\d)/, '$1.$2');
+            v = v.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+            i.value = v.slice(0, 14);
+        }
+
+        function maskPhone(i) {
+            let v = i.value.replace(/\D/g, '');
+            v = v.replace(/^(\d{2})(\d)/g, '($1) $2');
+            v = v.replace(/(\d)(\d{4})$/, '$1-$2');
+            i.value = v.slice(0, 15);
+        }
+
+        function escapeHtml(str) {
+            return (str || '').replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+            setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        function toggleDarkMode() {
+            document.documentElement.classList.toggle('dark');
+            const isDark = document.documentElement.classList.contains('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+            updateThemeIcons(isDark);
+        }
+
+        function loadDarkMode() {
+            const theme = localStorage.getItem('theme');
+            const isDark = theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches);
+            if(isDark) document.documentElement.classList.add('dark');
+            updateThemeIcons(isDark);
+        }
+
+        function updateThemeIcons(isDark) {
+            const iconD = document.getElementById('themeIconDesktop');
+            const iconM = document.getElementById('themeIconMobile');
+            if(iconD) iconD.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            if(iconM) iconM.setAttribute('data-lucide', isDark ? 'sun' : 'moon');
+            lucide.createIcons();
+        }
+    </script>
+</body>
+</html>
