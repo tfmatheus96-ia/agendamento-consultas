@@ -292,7 +292,6 @@
 
             <!-- TAB 4: MÉDICOS E EQUIPE -->
             <section id="tab-doctors" class="tab-content hidden space-y-8">
-                <!-- Seção Corpo Médico -->
                 <div class="space-y-4">
                     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                         <div>
@@ -306,26 +305,6 @@
                     </div>
 
                     <div id="doctors-manage-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                        <!-- Populated dynamically -->
-                    </div>
-                </div>
-
-                <hr class="border-slate-200 dark:border-slate-700">
-
-                <!-- Seção Colaboradores e Acessos -->
-                <div class="space-y-4">
-                    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                        <div>
-                            <h3 class="text-xl font-bold text-slate-900 dark:text-white">Colaboradores & Acessos</h3>
-                            <p class="text-sm text-slate-500 dark:text-slate-400">Cadastre usuários e senhas para que sua equipe possa acessar a plataforma.</p>
-                        </div>
-                        <button onclick="toggleUserModal(true)" class="bg-slate-800 hover:bg-slate-900 dark:bg-slate-700 dark:hover:bg-slate-600 text-white px-4 py-2.5 rounded-xl font-medium text-sm flex items-center justify-center gap-2 shadow-lg active:scale-95 transition-all">
-                            <i data-lucide="shield-plus" class="w-4 h-4"></i>
-                            Registrar Colaborador
-                        </button>
-                    </div>
-
-                    <div id="users-manage-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                         <!-- Populated dynamically -->
                     </div>
                 </div>
@@ -413,30 +392,6 @@
         </div>
     </div>
 
-    <!-- Modal: Registar Colaborador -->
-    <div id="modal-user" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-2xl shadow-xl border border-slate-200 dark:border-slate-700 p-6 space-y-4">
-            <div class="flex justify-between items-center pb-2 border-b border-slate-100 dark:border-slate-700">
-                <h3 class="font-bold text-slate-900 dark:text-white">Registar Novo Colaborador</h3>
-                <button onclick="toggleUserModal(false)" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
-            </div>
-            <form onsubmit="handleNewUserSubmit(event)" class="space-y-3">
-                <div>
-                    <label class="block text-xs font-medium text-slate-500 mb-1">Nome do Colaborador *</label>
-                    <input type="text" id="user-name" required placeholder="Ex: Lucas Gabriel" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm outline-none">
-                </div>
-                <div>
-                    <label class="block text-xs font-medium text-slate-500 mb-1">E-mail de Acesso *</label>
-                    <input type="email" id="user-email" required placeholder="lucas@medicare.com" class="w-full p-2.5 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-white text-sm outline-none">
-                </div>
-                <div class="pt-2 flex justify-end gap-2">
-                    <button type="button" onclick="toggleUserModal(false)" class="px-4 py-2 rounded-xl border text-slate-600 dark:text-slate-300 text-sm">Cancelar</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl bg-brand-600 text-white text-sm font-medium">Registar Colaborador</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
     <!-- Firebase Modular SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-app.js";
@@ -447,7 +402,6 @@
             getFirestore, collection, onSnapshot, addDoc, updateDoc, doc, deleteDoc, query, where, getDocs 
         } from "https://www.gstatic.com/firebasejs/10.10.0/firebase-firestore.js";
 
-        // Firebase Config
         const firebaseConfig = {
             apiKey: "AIzaSyATBOwZd9H-Tc7cYG8CQJ0_QKhpCKfMNyw",
             authDomain: "app-agendamento-de-consu-73c7d.firebaseapp.com",
@@ -464,13 +418,11 @@
 
         let doctors = [];
         let appointments = [];
-        let teamMembers = [];
         let selectedDoctorId = null;
         let selectedTimeSlot = null;
 
         const defaultSlots = ["08:00", "09:00", "10:00", "11:00", "14:00", "15:00", "16:00", "17:00"];
 
-        // Autenticação Listener
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 document.getElementById('screen-login').classList.add('hidden');
@@ -482,7 +434,7 @@
             }
         });
 
-        // Login Submit
+        // Login com verificação detalhada do tipo de erro
         window.handleLogin = async function(e) {
             e.preventDefault();
             const email = document.getElementById('login-email').value;
@@ -494,17 +446,21 @@
             try {
                 await signInWithEmailAndPassword(auth, email, pass);
             } catch (err) {
-                errDiv.innerText = "E-mail ou senha inválidos. Tente novamente.";
+                if (err.code === 'auth/user-not-found' || err.code === 'auth/invalid-email') {
+                    errDiv.innerText = "Usuário não encontrado ou e-mail inválido.";
+                } else if (err.code === 'auth/wrong-password' || err.code === 'auth/invalid-credential') {
+                    errDiv.innerText = "Senha incorreta. Tente novamente.";
+                } else {
+                    errDiv.innerText = "Falha no login: Usuário ou senha incorretos.";
+                }
                 errDiv.classList.remove('hidden');
             }
         };
 
-        // Logout
         window.handleLogout = function() {
             signOut(auth);
         };
 
-        // Firestore Realtime Listeners
         function initFirestoreListeners() {
             onSnapshot(collection(db, "doctors"), (snapshot) => {
                 doctors = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -516,14 +472,8 @@
                 renderAppointments();
                 updateDashboardStats();
             });
-
-            onSnapshot(collection(db, "team"), (snapshot) => {
-                teamMembers = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-                renderTeamMembers();
-            });
         }
 
-        // Render Doctors
         function renderDoctors() {
             const gridSelection = document.getElementById('doctors-selection-grid');
             const gridManage = document.getElementById('doctors-manage-grid');
@@ -560,24 +510,6 @@
             }
         }
 
-        // Render Colaboradores
-        function renderTeamMembers() {
-            const grid = document.getElementById('users-manage-grid');
-            if (!grid) return;
-
-            grid.innerHTML = teamMembers.map(m => `
-                <div class="bg-white dark:bg-slate-800 p-4 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm flex items-center justify-between">
-                    <div>
-                        <h4 class="font-bold text-slate-900 dark:text-white text-sm">${m.name}</h4>
-                        <p class="text-xs text-slate-500">${m.email}</p>
-                    </div>
-                    <span class="px-2 py-1 rounded-lg bg-brand-50 text-brand-600 text-[10px] font-bold">Colaborador</span>
-                </div>
-            `).join('');
-            lucide.createIcons();
-        }
-
-        // Seleção de Médico
         window.selectDoctor = function(id) {
             selectedDoctorId = id;
             document.querySelectorAll('.doctor-card').forEach(el => el.classList.remove('border-brand-500', 'bg-brand-50/30'));
@@ -586,7 +518,6 @@
             window.onDateSelected();
         };
 
-        // Render Horários
         window.onDateSelected = function() {
             const dateVal = document.getElementById('booking-date').value;
             const grid = document.getElementById('time-slots-grid');
@@ -617,7 +548,6 @@
             btn.classList.add('bg-brand-600', 'text-white', 'border-brand-600');
         };
 
-        // Submeter Agendamento
         window.handleBookingSubmit = async function(e) {
             e.preventDefault();
             if (!selectedDoctorId || !selectedTimeSlot) {
@@ -627,7 +557,6 @@
 
             const dateVal = document.getElementById('booking-date').value;
 
-            // Validação anti-duplicidade
             const q = query(
                 collection(db, "appointments"),
                 where("doctorId", "==", selectedDoctorId),
@@ -666,7 +595,6 @@
             switchTab('appointments');
         };
 
-        // Render Appointments
         function renderAppointments() {
             const list = document.getElementById('appointments-full-list');
             const recent = document.getElementById('recent-list');
@@ -713,12 +641,10 @@
             lucide.createIcons();
         }
 
-        // Alterar Status
         window.changeStatus = async function(id, status) {
             await updateDoc(doc(db, "appointments", id), { status });
         };
 
-        // Modal de Cancelamento
         window.openCancelModal = function(id) {
             document.getElementById('cancel-appointment-id').value = id;
             document.getElementById('cancel-reason').value = '';
@@ -754,7 +680,6 @@
         }
 
         window.toggleDoctorModal = function(show) { document.getElementById('modal-doctor').classList.toggle('hidden', !show); };
-        window.toggleUserModal = function(show) { document.getElementById('modal-user').classList.toggle('hidden', !show); };
 
         window.handleNewDoctorSubmit = async function(e) {
             e.preventDefault();
@@ -766,21 +691,6 @@
             };
             await addDoc(collection(db, "doctors"), newDoc);
             toggleDoctorModal(false);
-        };
-
-        // Adicionar Colaborador (sem desconectar o utilizador atual)
-        window.handleNewUserSubmit = async function(e) {
-            e.preventDefault();
-            const name = document.getElementById('user-name').value;
-            const email = document.getElementById('user-email').value;
-
-            try {
-                await addDoc(collection(db, "team"), { name, email, createdAt: new Date().toISOString() });
-                alert("Colaborador registado na lista! Lembre-se de criar o acesso no console do Firebase se for um novo e-mail.");
-                toggleUserModal(false);
-            } catch (err) {
-                alert("Erro ao guardar registo: " + err.message);
-            }
         };
 
         window.deleteDoctor = async function(id) {
